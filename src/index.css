@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --app-bg: #ffffff;
+  }
+
+  html,
+  body {
+    /* Kill the WhatsApp WebView's rubber-band / pull-to-refresh chrome globally.
+       Individual scrollable panes opt back into scrolling explicitly. */
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+    height: 100%;
+  }
+
+  body {
+    font-family: theme('fontFamily.sans');
+    background-color: var(--app-bg);
+  }
+
+  #root {
+    height: 100dvh;
+  }
+
+  * {
+    -webkit-touch-callout: none;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .paper-texture {
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(16, 19, 31, 0.05) 1px, transparent 0);
+    background-size: 14px 14px;
+  }
+
+  .grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+  }
+}
