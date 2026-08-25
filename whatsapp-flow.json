@@ -1,0 +1,176 @@
+{
+  "version": "7.3",
+  "screens": [
+    {
+      "id": "REVIEW",
+      "title": "Revisar contrato",
+      "data": {},
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "TextHeading",
+            "text": "Contrato de Servicios #1234"
+          },
+          {
+            "type": "TextBody",
+            "text": "Nortex Consultores S.A.S. te ha enviado el documento como archivo adjunto en este chat. Ábrelo para revisarlo antes de continuar."
+          },
+          {
+            "type": "OptIn",
+            "name": "accepted_terms",
+            "label": "Acepto realizar la firma por medios electrónicos con plena validez jurídica.",
+            "required": true
+          },
+          {
+            "type": "Footer",
+            "label": "Firmar documento",
+            "on-click-action": {
+              "name": "navigate",
+              "next": {
+                "type": "screen",
+                "name": "SIGN"
+              },
+              "payload": {
+                "accepted_terms": "${form.accepted_terms}"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "SIGN",
+      "title": "Firmar",
+      "data": {
+        "accepted_terms": {
+          "type": "boolean",
+          "__example__": true
+        }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "TextHeading",
+            "text": "Confirma tu firma"
+          },
+          {
+            "type": "TextBody",
+            "text": "Escribe tu nombre completo tal como aparece en tu documento de identidad. Esto se registrará como tu firma electrónica."
+          },
+          {
+            "type": "TextInput",
+            "name": "full_name",
+            "label": "Nombre completo",
+            "input-type": "text",
+            "required": true
+          },
+          {
+            "type": "OptIn",
+            "name": "confirm_signature",
+            "label": "Confirmo que este es mi nombre y que estoy firmando este documento.",
+            "required": true
+          },
+          {
+            "type": "Footer",
+            "label": "Siguiente",
+            "on-click-action": {
+              "name": "navigate",
+              "next": {
+                "type": "screen",
+                "name": "OTP"
+              },
+              "payload": {
+                "full_name": "${form.full_name}"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "OTP",
+      "title": "Verificación",
+      "data": {
+        "full_name": {
+          "type": "string",
+          "__example__": "Juan Pérez"
+        }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "TextHeading",
+            "text": "Ingresa el código de verificación"
+          },
+          {
+            "type": "TextBody",
+            "text": "Enviado a tu WhatsApp registrado."
+          },
+          {
+            "type": "TextInput",
+            "name": "otp_code",
+            "label": "Código de 6 dígitos",
+            "input-type": "number",
+            "required": true
+          },
+          {
+            "type": "TextCaption",
+            "text": "¿No recibiste el código? Espera unos segundos e inténtalo de nuevo."
+          },
+          {
+            "type": "Footer",
+            "label": "Confirmar y Finalizar Firma",
+            "on-click-action": {
+              "name": "navigate",
+              "next": {
+                "type": "screen",
+                "name": "SUCCESS"
+              },
+              "payload": {
+                "full_name": "${data.full_name}"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "SUCCESS",
+      "title": "Listo",
+      "terminal": true,
+      "success": true,
+      "data": {
+        "full_name": {
+          "type": "string",
+          "__example__": "Juan Pérez"
+        }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "TextHeading",
+            "text": "¡Documento firmado exitosamente!"
+          },
+          {
+            "type": "TextBody",
+            "text": "Hemos registrado tu firma con sello criptográfico. Puedes continuar con tu proceso."
+          },
+          {
+            "type": "Footer",
+            "label": "Volver a WhatsApp",
+            "on-click-action": {
+              "name": "complete",
+              "payload": {
+                "full_name": "${data.full_name}"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

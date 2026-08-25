@@ -1,13 +1,17 @@
 import { useState } from 'react'
 
+// Business WhatsApp number in E.164 without the leading "+" (wa.me format).
+const WHATSAPP_NUMBER = '573007347075'
+
 export default function SuccessStep() {
   const [showFallback, setShowFallback] = useState(false)
 
   const handleClose = () => {
-    window.close()
-    // If the WebView blocks programmatic close (iOS/Android in-app browsers
-    // commonly do), fall back to a friendly manual-close instruction.
-    setTimeout(() => setShowFallback(true), 350)
+    // wa.me is intercepted by the OS and switches straight into the WhatsApp
+    // app/chat. window.close() only works on tabs the page itself opened, so
+    // it silently fails here since the WebView/browser opened this tab.
+    window.location.href = `https://wa.me/${WHATSAPP_NUMBER}`
+    setTimeout(() => setShowFallback(true), 800)
   }
 
   return (
@@ -56,7 +60,7 @@ export default function SuccessStep() {
 
         {showFallback && (
           <p className="mt-4 text-[12.5px] text-ink-400 animate-rise" style={{ opacity: 0, animationFillMode: 'forwards' }}>
-            Puedes cerrar esta ventana de forma segura y regresar al chat.
+            Si no fuiste redirigido, puedes cerrar esta ventana y volver al chat manualmente.
           </p>
         )}
       </div>
