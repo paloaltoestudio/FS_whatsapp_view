@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PdfViewer from './PdfViewer.jsx'
 
 export default function DocumentStep({ onNext }) {
   const [accepted, setAccepted] = useState(true)
@@ -7,11 +8,7 @@ export default function DocumentStep({ onNext }) {
     <div className="flex flex-col h-full bg-white">
       <div className="flex-1 min-h-0 px-4 pt-4 pb-4">
         <div className="h-full rounded-t-2xl bg-paper-100 border border-ink-100 shadow-sheet overflow-hidden">
-          <iframe
-            src="/ejemplo.pdf#toolbar=0&navpanes=0"
-            title="Contrato de Servicios #1234"
-            className="h-full w-full border-0 bg-paper-100"
-          />
+          <PdfViewer src="/ejemplo.pdf" />
         </div>
       </div>
 
