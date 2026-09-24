@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 
-const LENGTH = 6
+const LENGTH = 4
+
+// n8n webhook — gives visibility into every request via n8n's execution log,
+// replacing the earlier Netlify Function proxy.
+const VERIFY_OTP_URL = 'https://n8n-test.tredasolutions.com/webhook/verify-otp'
 
 export default function OtpStep({ signatureHash, onConfirm }) {
   const [digits, setDigits] = useState(Array(LENGTH).fill(''))
@@ -70,7 +74,7 @@ export default function OtpStep({ signatureHash, onConfirm }) {
     setError('')
     setIsVerifying(true)
     try {
-      const res = await fetch('/.netlify/functions/verify-otp', {
+      const res = await fetch(VERIFY_OTP_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ signatureHash, otpCode: code }),
@@ -106,7 +110,7 @@ export default function OtpStep({ signatureHash, onConfirm }) {
       </div>
 
       <div className="flex-1 flex flex-col justify-center px-5">
-        <div className="flex justify-between gap-2">
+        <div className="flex justify-center gap-3">
           {digits.map((digit, i) => (
             <input
               key={i}
@@ -119,7 +123,7 @@ export default function OtpStep({ signatureHash, onConfirm }) {
               pattern="[0-9]*"
               autoComplete="one-time-code"
               maxLength={1}
-              className={`h-14 w-full max-w-[52px] rounded-2xl bg-ink-50 text-center text-xl font-semibold text-ink-950 border-2 outline-none transition-colors ${
+              className={`h-16 w-16 rounded-2xl bg-ink-50 text-center text-2xl font-semibold text-ink-950 border-2 outline-none transition-colors ${
                 digit ? 'border-brand-700 bg-brand-50' : 'border-ink-200 focus:border-ink-400'
               }`}
             />
