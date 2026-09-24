@@ -18,6 +18,14 @@
         "authenticationMethodId": {
           "type": "number",
           "__example__": 4
+        },
+        "documentTitle": {
+          "type": "string",
+          "__example__": "Contrato de Servicios #1234"
+        },
+        "companyName": {
+          "type": "string",
+          "__example__": "Nortex Consultores S.A.S."
         }
       },
       "layout": {
@@ -25,11 +33,11 @@
         "children": [
           {
             "type": "TextHeading",
-            "text": "Contrato de Servicios #1234"
+            "text": "${data.documentTitle}"
           },
           {
             "type": "TextBody",
-            "text": "Nortex Consultores S.A.S. te ha enviado el documento como archivo adjunto en este chat. Ábrelo para revisarlo antes de continuar."
+            "text": "${data.companyName} te ha enviado el documento como archivo adjunto en este chat. Ábrelo para revisarlo antes de continuar."
           },
           {
             "type": "OptIn",
@@ -101,17 +109,12 @@
             "type": "Footer",
             "label": "Siguiente",
             "on-click-action": {
-              "name": "navigate",
-              "next": {
-                "type": "screen",
-                "name": "OTP"
-              },
+              "name": "data_exchange",
               "payload": {
+                "trigger": "request_otp",
                 "full_name": "${form.full_name}",
                 "signatureHash": "${data.signatureHash}",
-                "authenticationMethodId": "${data.authenticationMethodId}",
-                "error_message": "",
-                "has_error": false
+                "authenticationMethodId": "${data.authenticationMethodId}"
               }
             }
           }
@@ -168,7 +171,7 @@
           },
           {
             "type": "EmbeddedLink",
-            "text": "¿No recibiste el código? Reenviar",
+            "text": "¿No llegó? Reenviar",
             "on-click-action": {
               "name": "data_exchange",
               "payload": {

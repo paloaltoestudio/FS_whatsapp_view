@@ -109,6 +109,38 @@ export const handler = async (event) => {
         data: { has_error: true, error_message: 'No se pudo conectar con el servidor.' },
       }
     }
+  } else if (action === 'data_exchange' && trigger === 'request_otp') {
+    // First arrival at OTP (from SIGN) — this screen has never rendered before,
+    // so every field its data model declares must be supplied here, not just
+    // the error fields like the 'resend' branch below (which only updates an
+    // already-active OTP screen).
+    try {
+      const { ok, data: result } = await callWebhook(REQUEST_OTP_URL, {
+        signatureHash: data.signatureHash,
+        authenticationMethodId: data.authenticationMethodId,
+      })
+      responsePayload = {
+        screen: 'OTP',
+        data: {
+          full_name: data.full_name,
+          signatureHash: data.signatureHash,
+          authenticationMethodId: data.authenticationMethodId,
+          has_error: !ok,
+          error_message: ok ? '' : result.message || 'No se pudo enviar el código de verificación.',
+        },
+      }
+    } catch {
+      responsePayload = {
+        screen: 'OTP',
+        data: {
+          full_name: data.full_name,
+          signatureHash: data.signatureHash,
+          authenticationMethodId: data.authenticationMethodId,
+          has_error: true,
+          error_message: 'No se pudo conectar con el servidor.',
+        },
+      }
+    }
   } else if (action === 'data_exchange' && trigger === 'resend') {
     try {
       const { ok, data: result } = await callWebhook(REQUEST_OTP_URL, {
@@ -127,8 +159,23 @@ export const handler = async (event) => {
         data: { has_error: true, error_message: 'No se pudo conectar con el servidor.' },
       }
     }
+  } else if (action === 'INIT') {
+    // REVIEW is the Flow's only entry screen (never a navigate/data_exchange
+    // target elsewhere), so INIT always means "about to render REVIEW" — it
+    // needs real values for every field REVIEW's data model declares.
+    // In production these come from flow_action_payload at send time instead
+    // (see n8n's "Enviar Flow WhatsApp"), so this branch mainly exists to make
+    // Flow Builder's "Request data" Preview mode work without a real send.
+    responsePayload = {
+      data: {
+        signatureHash: '9807055eed68625f7aef1b62ac8a7603fdc7713e8dae2e1dcd714d99303cebaa',
+        authenticationMethodId: 4,
+        documentTitle: 'Contrato de Servicios #1234',
+        companyName: 'Nortex Consultores S.A.S.',
+      },
+    }
   } else {
-    // INIT, BACK, or anything else — trivial ack, no screen change.
+    // BACK, or anything else — trivial ack, no screen change.
     responsePayload = { data: {} }
   }
 
