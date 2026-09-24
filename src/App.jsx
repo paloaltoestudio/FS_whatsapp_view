@@ -6,7 +6,10 @@ import OtpStep from './components/OtpStep.jsx'
 import SuccessStep from './components/SuccessStep.jsx'
 
 // ?sinotp in the URL skips the OTP verification screen entirely.
-const skipOtp = new URLSearchParams(window.location.search).has('sinotp')
+// ?hash / ?uuid come from the WhatsApp link and identify the signature process.
+const params = new URLSearchParams(window.location.search)
+const skipOtp = params.has('sinotp')
+const signatureHash = params.get('hash') || ''
 
 const STEP_LABELS = skipOtp
   ? ['Documento', 'Firma', 'Listo']
@@ -27,9 +30,16 @@ export default function App() {
       <div className="flex-1 min-h-0">
         {step === 1 && <DocumentStep onNext={() => goTo(2)} />}
         {step === 2 && (
-          <SignatureStep onBack={() => goTo(1)} onNext={() => goTo(skipOtp ? 4 : 3)} />
+          <SignatureStep
+            signatureHash={signatureHash}
+            skipOtp={skipOtp}
+            onBack={() => goTo(1)}
+            onNext={() => goTo(skipOtp ? 4 : 3)}
+          />
         )}
-        {step === 3 && !skipOtp && <OtpStep onConfirm={() => goTo(4)} />}
+        {step === 3 && !skipOtp && (
+          <OtpStep signatureHash={signatureHash} onConfirm={() => goTo(4)} />
+        )}
         {step === 4 && <SuccessStep />}
       </div>
     </div>

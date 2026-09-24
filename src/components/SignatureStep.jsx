@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 
-export default function SignatureStep({ onBack, onNext }) {
+export default function SignatureStep({ signatureHash, skipOtp, onBack, onNext }) {
   const canvasRef = useRef(null)
   const ctxRef = useRef(null)
   const drawingRef = useRef(false)
   const lastPointRef = useRef({ x: 0, y: 0 })
   const [hasStroke, setHasStroke] = useState(false)
+  const [isRequesting, setIsRequesting] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -69,6 +71,36 @@ export default function SignatureStep({ onBack, onNext }) {
     setHasStroke(false)
   }
 
+  const handleNext = async () => {
+    // The document itself isn't wired to the handwritten-signature endpoint yet
+    // (no API for it), so this canvas is UI-only for now. ?sinotp also bypasses
+    // OTP entirely, so there's nothing to request in that mode either.
+    if (skipOtp) {
+      onNext()
+      return
+    }
+
+    setError('')
+    setIsRequesting(true)
+    try {
+      const res = await fetch('/.netlify/functions/request-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signatureHash }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError(data.message || 'No se pudo enviar el código de verificación.')
+        return
+      }
+      onNext()
+    } catch {
+      setError('No se pudo conectar con el servidor. Intenta de nuevo.')
+    } finally {
+      setIsRequesting(false)
+    }
+  }
+
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="px-5 pt-5 pb-4 shrink-0">
@@ -122,22 +154,29 @@ export default function SignatureStep({ onBack, onNext }) {
         </div>
       </div>
 
-      <div className="shrink-0 px-5 pt-2 pb-[calc(env(safe-area-inset-bottom)+16px)] flex gap-3">
-        <button
-          type="button"
-          onClick={onBack}
-          className="h-[52px] px-6 rounded-2xl bg-brand-700 text-white font-semibold text-[15px] active:scale-[0.98] transition-transform"
-        >
-          Atrás
-        </button>
-        <button
-          type="button"
-          disabled={!hasStroke}
-          onClick={onNext}
-          className="flex-1 h-[52px] rounded-2xl bg-brand-700 disabled:bg-ink-200 disabled:text-ink-400 text-white font-semibold text-[15px] shadow-float active:scale-[0.98] transition-all duration-150"
-        >
-          Siguiente
-        </button>
+      <div className="shrink-0 px-5 pt-2 pb-[calc(env(safe-area-inset-bottom)+16px)]">
+        {error && (
+          <p className="mb-3 text-[12.5px] leading-snug text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+            {error}
+          </p>
+        )}
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onBack}
+            className="h-[52px] px-6 rounded-2xl bg-brand-700 text-white font-semibold text-[15px] active:scale-[0.98] transition-transform"
+          >
+            Atrás
+          </button>
+          <button
+            type="button"
+            disabled={!hasStroke || isRequesting}
+            onClick={handleNext}
+            className="flex-1 h-[52px] rounded-2xl bg-brand-700 disabled:bg-ink-200 disabled:text-ink-400 text-white font-semibold text-[15px] shadow-float active:scale-[0.98] transition-all duration-150"
+          >
+            {isRequesting ? 'Enviando código…' : 'Siguiente'}
+          </button>
+        </div>
       </div>
     </div>
   )

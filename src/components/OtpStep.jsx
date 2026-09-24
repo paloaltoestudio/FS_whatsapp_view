@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 
 const LENGTH = 6
 
-export default function OtpStep({ onConfirm }) {
+export default function OtpStep({ signatureHash, onConfirm }) {
   const [digits, setDigits] = useState(Array(LENGTH).fill(''))
   const [resendIn, setResendIn] = useState(30)
+  const [isVerifying, setIsVerifying] = useState(false)
+  const [error, setError] = useState('')
   const inputsRef = useRef([])
 
   useEffect(() => {
@@ -63,9 +65,27 @@ export default function OtpStep({ onConfirm }) {
     setResendIn(30)
   }
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!complete) return
-    onConfirm()
+    setError('')
+    setIsVerifying(true)
+    try {
+      const res = await fetch('/.netlify/functions/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signatureHash, otpCode: code }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError(data.message || 'No se pudo verificar el código.')
+        return
+      }
+      onConfirm()
+    } catch {
+      setError('No se pudo conectar con el servidor. Intenta de nuevo.')
+    } finally {
+      setIsVerifying(false)
+    }
   }
 
   return (
@@ -123,13 +143,18 @@ export default function OtpStep({ onConfirm }) {
       </div>
 
       <div className="shrink-0 px-5 pt-2 pb-[calc(env(safe-area-inset-bottom)+16px)]">
+        {error && (
+          <p className="mb-3 text-[12.5px] leading-snug text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+            {error}
+          </p>
+        )}
         <button
           type="button"
-          disabled={!complete}
+          disabled={!complete || isVerifying}
           onClick={handleConfirm}
           className="w-full h-[52px] rounded-2xl bg-brand-700 disabled:bg-ink-200 disabled:text-ink-400 text-white font-semibold text-[15px] shadow-float active:scale-[0.98] transition-all duration-150"
         >
-          Confirmar y Finalizar Firma
+          {isVerifying ? 'Verificando…' : 'Confirmar y Finalizar Firma'}
         </button>
       </div>
     </div>
