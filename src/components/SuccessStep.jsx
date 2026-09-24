@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 // Business WhatsApp number in E.164 without the leading "+" (wa.me format).
 const WHATSAPP_NUMBER = '573007347075'
+
+// How long the success state stays visible before auto-returning to WhatsApp.
+const AUTO_RETURN_DELAY_MS = 1800
 
 export default function SuccessStep() {
   const [showFallback, setShowFallback] = useState(false)
@@ -13,6 +16,12 @@ export default function SuccessStep() {
     window.location.href = `https://wa.me/${WHATSAPP_NUMBER}`
     setTimeout(() => setShowFallback(true), 800)
   }
+
+  useEffect(() => {
+    const timer = setTimeout(handleClose, AUTO_RETURN_DELAY_MS)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="flex flex-col h-full bg-white items-center justify-center px-8 text-center">
