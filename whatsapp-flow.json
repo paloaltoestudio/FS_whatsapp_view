@@ -1,10 +1,25 @@
 {
   "version": "7.3",
+  "data_api_version": "3.0",
+  "routing_model": {
+    "REVIEW": ["SIGN"],
+    "SIGN": ["OTP"],
+    "OTP": ["SUCCESS"]
+  },
   "screens": [
     {
       "id": "REVIEW",
       "title": "Revisar contrato",
-      "data": {},
+      "data": {
+        "signatureHash": {
+          "type": "string",
+          "__example__": "9807055eed68625f7aef1b62ac8a7603fdc7713e8dae2e1dcd714d99303cebaa"
+        },
+        "authenticationMethodId": {
+          "type": "number",
+          "__example__": 4
+        }
+      },
       "layout": {
         "type": "SingleColumnLayout",
         "children": [
@@ -32,7 +47,9 @@
                 "name": "SIGN"
               },
               "payload": {
-                "accepted_terms": "${form.accepted_terms}"
+                "accepted_terms": "${form.accepted_terms}",
+                "signatureHash": "${data.signatureHash}",
+                "authenticationMethodId": "${data.authenticationMethodId}"
               }
             }
           }
@@ -46,6 +63,14 @@
         "accepted_terms": {
           "type": "boolean",
           "__example__": true
+        },
+        "signatureHash": {
+          "type": "string",
+          "__example__": "9807055eed68625f7aef1b62ac8a7603fdc7713e8dae2e1dcd714d99303cebaa"
+        },
+        "authenticationMethodId": {
+          "type": "number",
+          "__example__": 4
         }
       },
       "layout": {
@@ -82,7 +107,11 @@
                 "name": "OTP"
               },
               "payload": {
-                "full_name": "${form.full_name}"
+                "full_name": "${form.full_name}",
+                "signatureHash": "${data.signatureHash}",
+                "authenticationMethodId": "${data.authenticationMethodId}",
+                "error_message": "",
+                "has_error": false
               }
             }
           }
@@ -96,6 +125,22 @@
         "full_name": {
           "type": "string",
           "__example__": "Juan Pérez"
+        },
+        "signatureHash": {
+          "type": "string",
+          "__example__": "9807055eed68625f7aef1b62ac8a7603fdc7713e8dae2e1dcd714d99303cebaa"
+        },
+        "authenticationMethodId": {
+          "type": "number",
+          "__example__": 4
+        },
+        "error_message": {
+          "type": "string",
+          "__example__": ""
+        },
+        "has_error": {
+          "type": "boolean",
+          "__example__": false
         }
       },
       "layout": {
@@ -110,27 +155,39 @@
             "text": "Enviado a tu WhatsApp registrado."
           },
           {
+            "type": "TextBody",
+            "text": "${data.error_message}",
+            "visible": "${data.has_error}"
+          },
+          {
             "type": "TextInput",
             "name": "otp_code",
-            "label": "Código de 6 dígitos",
+            "label": "Código de 4 dígitos",
             "input-type": "number",
             "required": true
           },
           {
-            "type": "TextCaption",
-            "text": "¿No recibiste el código? Espera unos segundos e inténtalo de nuevo."
+            "type": "EmbeddedLink",
+            "text": "¿No recibiste el código? Reenviar",
+            "on-click-action": {
+              "name": "data_exchange",
+              "payload": {
+                "trigger": "resend",
+                "signatureHash": "${data.signatureHash}",
+                "authenticationMethodId": "${data.authenticationMethodId}"
+              }
+            }
           },
           {
             "type": "Footer",
             "label": "Confirmar y Finalizar Firma",
             "on-click-action": {
-              "name": "navigate",
-              "next": {
-                "type": "screen",
-                "name": "SUCCESS"
-              },
+              "name": "data_exchange",
               "payload": {
-                "full_name": "${data.full_name}"
+                "trigger": "verify",
+                "signatureHash": "${data.signatureHash}",
+                "otpCode": "${form.otp_code}",
+                "authenticationMethodId": "${data.authenticationMethodId}"
               }
             }
           }
@@ -142,12 +199,7 @@
       "title": "Listo",
       "terminal": true,
       "success": true,
-      "data": {
-        "full_name": {
-          "type": "string",
-          "__example__": "Juan Pérez"
-        }
-      },
+      "data": {},
       "layout": {
         "type": "SingleColumnLayout",
         "children": [
@@ -157,16 +209,14 @@
           },
           {
             "type": "TextBody",
-            "text": "Hemos registrado tu firma con sello criptográfico. Puedes continuar con tu proceso."
+            "text": "Hemos registrado tu firma. Puedes continuar con tu proceso."
           },
           {
             "type": "Footer",
             "label": "Volver a WhatsApp",
             "on-click-action": {
               "name": "complete",
-              "payload": {
-                "full_name": "${data.full_name}"
-              }
+              "payload": {}
             }
           }
         ]
