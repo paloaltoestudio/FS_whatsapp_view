@@ -35,18 +35,15 @@ export default function SuccessStep() {
       </div>
 
       <h1 className="font-display text-[26px] leading-tight text-ink-950 font-semibold animate-rise" style={{ animationDelay: '150ms', opacity: 0 }}>
-        ¡Documento Firmado Exitosamente!
+        ¡Código verificado!
       </h1>
       <p className="mt-3 text-[14px] leading-relaxed text-ink-500 max-w-[300px] animate-rise" style={{ animationDelay: '250ms', opacity: 0 }}>
-        Hemos registrado tu firma con sello criptográfico. Puedes continuar con tu proceso.
+        Tu identidad fue confirmada y el documento entró en proceso de firma. Te avisaremos por WhatsApp en cuanto quede completado.
       </p>
 
-      <div className="mt-3 flex items-center gap-1.5 text-[12px] text-ink-400 animate-rise" style={{ animationDelay: '320ms', opacity: 0 }}>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="11" width="18" height="10" rx="2" />
-          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-        </svg>
-        Contrato #1234 · SHA-256 verificado
+      <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 animate-rise" style={{ animationDelay: '320ms', opacity: 0 }}>
+        <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+        <span className="text-xs font-medium text-amber-700">Firma en proceso</span>
       </div>
 
       <div className="w-full max-w-sm mt-10 animate-rise" style={{ animationDelay: '420ms', opacity: 0 }}>
