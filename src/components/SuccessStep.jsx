@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 // Business WhatsApp number in E.164 without the leading "+" (wa.me format).
-const WHATSAPP_NUMBER = '573007347075'
+const WHATSAPP_NUMBER = '573026947616'
 
 // How long the success state stays visible before auto-returning to WhatsApp.
 const AUTO_RETURN_DELAY_MS = 1800
