@@ -48,7 +48,11 @@ export default function App() {
           />
         )}
         {step === 3 && !skipOtp && (
-          <OtpStep signatureHash={signatureHash} onConfirm={() => goTo(4)} />
+          <OtpStep
+            signatureHash={signatureHash}
+            authenticationMethodId={authenticationMethodId}
+            onConfirm={() => goTo(4)}
+          />
         )}
         {step === 4 && <SuccessStep />}
       </div>

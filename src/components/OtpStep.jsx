@@ -2,14 +2,16 @@ import { useEffect, useRef, useState } from 'react'
 
 const LENGTH = 4
 
-// n8n webhook — gives visibility into every request via n8n's execution log,
+// n8n webhooks — give visibility into every request via n8n's execution log,
 // replacing the earlier Netlify Function proxy.
+const REQUEST_OTP_URL = 'https://n8n-test.tredasolutions.com/webhook/request-otp'
 const VERIFY_OTP_URL = 'https://n8n-test.tredasolutions.com/webhook/verify-otp'
 
-export default function OtpStep({ signatureHash, onConfirm }) {
+export default function OtpStep({ signatureHash, authenticationMethodId, onConfirm }) {
   const [digits, setDigits] = useState(Array(LENGTH).fill(''))
   const [resendIn, setResendIn] = useState(30)
   const [isVerifying, setIsVerifying] = useState(false)
+  const [isResending, setIsResending] = useState(false)
   const [error, setError] = useState('')
   const inputsRef = useRef([])
 
@@ -64,9 +66,29 @@ export default function OtpStep({ signatureHash, onConfirm }) {
   const code = digits.join('')
   const complete = code.length === LENGTH
 
-  const handleResend = () => {
-    if (resendIn > 0) return
-    setResendIn(30)
+  const handleResend = async () => {
+    if (resendIn > 0 || isResending) return
+    setError('')
+    setIsResending(true)
+    try {
+      const res = await fetch(REQUEST_OTP_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ signatureHash, authenticationMethodId }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError(data.message || 'No se pudo reenviar el código.')
+        return
+      }
+      setDigits(Array(LENGTH).fill(''))
+      inputsRef.current[0]?.focus()
+      setResendIn(30)
+    } catch {
+      setError('No se pudo conectar con el servidor. Intenta de nuevo.')
+    } finally {
+      setIsResending(false)
+    }
   }
 
   const handleConfirm = async () => {
@@ -134,10 +156,12 @@ export default function OtpStep({ signatureHash, onConfirm }) {
           <button
             type="button"
             onClick={handleResend}
-            disabled={resendIn > 0}
+            disabled={resendIn > 0 || isResending}
             className="text-[13px] font-medium text-ink-500 disabled:text-ink-300"
           >
-            {resendIn > 0 ? (
+            {isResending ? (
+              <>Reenviando…</>
+            ) : resendIn > 0 ? (
               <>¿No recibiste el código? Reenviar en {resendIn}s</>
             ) : (
               <span className="text-brand-700">¿No recibiste el código? Reenviar</span>
