@@ -6,10 +6,19 @@ import OtpStep from './components/OtpStep.jsx'
 import SuccessStep from './components/SuccessStep.jsx'
 
 // ?sinotp in the URL skips the OTP verification screen entirely.
-// ?hash / ?uuid come from the WhatsApp link and identify the signature process.
+//
+// The approved WhatsApp template's URL button only supports a single dynamic
+// variable, so n8n packs both values we need into one ?hash= param as
+// "<signatureHash>.<authenticationMethodId>" (e.g. "9807...-fd56.4"). We split
+// it back apart here. `.trim()` guards against a stray leading space we saw
+// baked into one sample URL in WhatsApp Manager.
 const params = new URLSearchParams(window.location.search)
 const skipOtp = params.has('sinotp')
-const signatureHash = params.get('hash') || ''
+const rawHashParam = (params.get('hash') || '').trim()
+const lastDot = rawHashParam.lastIndexOf('.')
+const signatureHash = lastDot >= 0 ? rawHashParam.slice(0, lastDot) : rawHashParam
+const authMethodParam = lastDot >= 0 ? parseInt(rawHashParam.slice(lastDot + 1), 10) : NaN
+const authenticationMethodId = Number.isFinite(authMethodParam) ? authMethodParam : 4
 
 const STEP_LABELS = skipOtp
   ? ['Documento', 'Firma', 'Listo']
@@ -32,6 +41,7 @@ export default function App() {
         {step === 2 && (
           <SignatureStep
             signatureHash={signatureHash}
+            authenticationMethodId={authenticationMethodId}
             skipOtp={skipOtp}
             onBack={() => goTo(1)}
             onNext={() => goTo(skipOtp ? 4 : 3)}

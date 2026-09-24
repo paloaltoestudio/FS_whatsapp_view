@@ -1,13 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 
-// Only method the 5B signing flow supports for now.
-const AUTHENTICATION_METHOD_ID = 4
-
 // n8n webhook — gives visibility into every request via n8n's execution log,
 // replacing the earlier Netlify Function proxy.
 const REQUEST_OTP_URL = 'https://n8n-test.tredasolutions.com/webhook/request-otp'
 
-export default function SignatureStep({ signatureHash, skipOtp, onBack, onNext }) {
+export default function SignatureStep({ signatureHash, authenticationMethodId, skipOtp, onBack, onNext }) {
   const canvasRef = useRef(null)
   const ctxRef = useRef(null)
   const drawingRef = useRef(false)
@@ -93,7 +90,7 @@ export default function SignatureStep({ signatureHash, skipOtp, onBack, onNext }
       const res = await fetch(REQUEST_OTP_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ signatureHash, authenticationMethodId: AUTHENTICATION_METHOD_ID }),
+        body: JSON.stringify({ signatureHash, authenticationMethodId }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
