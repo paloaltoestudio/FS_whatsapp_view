@@ -72,7 +72,11 @@ export const handler = async (event) => {
   let decrypted
   try {
     decrypted = decryptRequest(body)
-  } catch {
+  } catch (err) {
+    // Logged server-side only — never leaked to Meta's response.
+    console.error('Flow decryption failed:', err.message)
+    console.error('FLOW_PRIVATE_KEY present:', Boolean(process.env.FLOW_PRIVATE_KEY))
+    console.error('FLOW_PRIVATE_KEY starts with BEGIN marker:', (process.env.FLOW_PRIVATE_KEY || '').trimStart().startsWith('-----BEGIN'))
     // Meta expects HTTP 432 specifically for decryption/signature failures,
     // so it knows to prompt a key refresh rather than treating it as a generic error.
     return { statusCode: 432, body: 'Decryption failed' }
