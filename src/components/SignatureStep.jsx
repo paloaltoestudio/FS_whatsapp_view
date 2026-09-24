@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 
+// Only method the 5B signing flow supports for now.
+const AUTHENTICATION_METHOD_ID = 4
+
 export default function SignatureStep({ signatureHash, skipOtp, onBack, onNext }) {
   const canvasRef = useRef(null)
   const ctxRef = useRef(null)
@@ -86,7 +89,7 @@ export default function SignatureStep({ signatureHash, skipOtp, onBack, onNext }
       const res = await fetch('/.netlify/functions/request-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ signatureHash }),
+        body: JSON.stringify({ signatureHash, authenticationMethodId: AUTHENTICATION_METHOD_ID }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {

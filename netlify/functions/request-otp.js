@@ -12,7 +12,7 @@ export const handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ status: 'error', message: 'JSON inválido' }) }
   }
 
-  const { signatureHash } = body
+  const { signatureHash, authenticationMethodId } = body
   if (!signatureHash) {
     return {
       statusCode: 400,
@@ -23,7 +23,7 @@ export const handler = async (event) => {
   try {
     const { status, data } = await fidFetch('/api/v2/Signature/request-otp', {
       method: 'POST',
-      body: JSON.stringify({ signatureHash, authenticationMethodId: 4 }),
+      body: JSON.stringify({ signatureHash, authenticationMethodId: authenticationMethodId ?? 4 }),
     })
     return { statusCode: status, body: JSON.stringify(data) }
   } catch (err) {
